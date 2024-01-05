@@ -245,8 +245,8 @@ Resources:
         - Name: flannel
           Config: ''
   ComputenestHelmApplication:
-    Type: MODULE::ACS::ComputeNest::ClusterHelmApplication
-    Version: v2
+    Type: MODULE::ACS::ComputeNest::FluxOciHelmDeploy
+    Version: v1
     DependsOn:
       - ManagedKubernetesCluster
     Properties:
@@ -254,7 +254,8 @@ Resources:
         Fn::GetAtt:
           - ManagedKubernetesCluster
           - ClusterId
-      ChartIdentifier: '{{ computenest::helmpull::springBoot }}'
+      HelmChartUrl: '{{ computenest::helmchart::springBoot }}'
+      DockerConfigJson: '{{ computenest::helm::dockerconfigjson }}'
       ChartValues:
         image:
           fullname: '{{ computenest::acrimage::springBootDemo }}'
@@ -265,18 +266,20 @@ Resources:
       Namespace:
         Ref: ALIYUN::StackName
       ReleaseName: spring-boot-chart
-  # 睡眠1分钟，以便于获取资源时可以拿到
-  HelmSleep:
-    Type: ALIYUN::ROS::Sleep
-    DependsOn:
-      - ComputenestHelmApplication
-    Properties:
-      CreateDuration: 60
+      WaitUntil:
+        - Kind: Service
+          Name: spring-boot-chart
+          Namespace:
+            Ref: ALIYUN::StackName
+          JsonPath: $.status.loadBalancer.ingress[0].ip
+          Operator: NotEmpty
+          FirstMatch: true
+          Timeout: 300
   # 获取service信息，输出到output中
   ClusterApplicationResources:
     Type: DATASOURCE::CS::ClusterApplicationResources
     DependsOn:
-      - HelmSleep
+      - ComputenestHelmApplication
     Properties:
       ClusterId:
         Fn::GetAtt:

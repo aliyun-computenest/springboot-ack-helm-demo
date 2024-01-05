@@ -10,7 +10,7 @@ Service:
           ArtifactId: ${Artifact.Artifact_1.ArtifactId}
           ArtifactVersion: ${Artifact.Artifact_1.ArtifactVersion}
       HelmChartArtifactRelation:
-        '{{ computenest::helmpull::springBoot }}':
+        '{{ computenest::helmchart::springBoot }}':
           ArtifactId: ${Artifact.Artifact_2.ArtifactId}
           ArtifactVersion: ${Artifact.Artifact_2.ArtifactVersion}
     TemplateConfigs:
