@@ -279,7 +279,7 @@ Parameters:
     Label:
       en: Zone ID
       zh-cn: 可用区
-    Default: cn-hangzhou-h
+    Default: ap-southeast-1a
   VpcCidrBlock:
     Type: String
     Label:
