@@ -1,0 +1,52 @@
+Service:
+  RegionId: cn-hangzhou
+  DeployType: ros
+  DeployMetadata:
+    ServiceInstanceNameRule:
+      Prefix: spring-boot-
+    SupplierDeployMetadata:
+      AcrImageArtifactRelation:
+        '{{ computenest::acrimage::springBootDemo }}':
+          ArtifactId: ${Artifact.Artifact_1.ArtifactId}
+          ArtifactVersion: ${Artifact.Artifact_1.ArtifactVersion}
+      HelmChartArtifactRelation:
+        '{{ computenest::helmpull::springBoot }}':
+          ArtifactId: ${Artifact.Artifact_2.ArtifactId}
+          ArtifactVersion: ${Artifact.Artifact_2.ArtifactVersion}
+    TemplateConfigs:
+      - Name: 新建ack部署helm chart模版
+        Url: 'ros_templates/template.yaml'
+        AllowedRegions: []
+  ServiceType: private
+  ServiceInfo:
+    Locale: zh-CN
+    ShortDescription: spring boot demo，新建ack集群，并以helm chart的方式部署spring boot应用
+    Image: 'resources/icons/service_logo.png'
+    Name: SpringBoot服务示例(ack+helm版本)
+  ShareType: Public
+  ApprovalType: Manual
+Artifact:
+  Artifact_1:
+    ArtifactType: AcrImage
+    ArtifactName: spring-boot-demo
+    Description: spring-boot-demo
+    ArtifactProperty:
+      RepoName: ${AcrImageBuilder.AcrImage_1.RepoName}
+      Tag: ${AcrImageBuilder.AcrImage_1.Tag}
+  Artifact_2:
+    ArtifactType: HelmChart
+    ArtifactName: spring-boot-chart
+    Description: SpringBoot HelmChart部署物
+    ArtifactProperty:
+      RepoName: ${HelmChartBuilder.HelmChart_1.RepoName}
+      Tag: ${HelmChartBuilder.HelmChart_1.Tag}
+AcrImageBuilder:
+  AcrImage_1:
+    DockerFilePath: 'resources/artifact_resources/acr_image/Dockerfile'
+    RepoName: spring-boot-demo
+    Tag: v1.0
+HelmChartBuilder:
+  HelmChart_1:
+    HelmChartPath: 'resources/artifact_resources/helm_chart/spring-boot-chart-0.1.0.tgz'
+    RepoName: spring-boot-chart
+    Tag: 0.1.0
