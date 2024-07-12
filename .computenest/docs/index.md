@@ -16,7 +16,7 @@
 
 本部署架构为ack集群部署，将helm chart文件通过ComputenestHelmApplication资源类型部署到ack集群中，通过service绑定的loadBalancer的公网ip进行访问，这个loadbalancer的创建由ack集群自动完成, 在本例中，service提供的对外端口为8080，和容器对外提供的端口相同。
 
-![img_7.png](img_7.png)
+![img_7.png](architecture.png)
 
 ## 服务构建计费说明
 
