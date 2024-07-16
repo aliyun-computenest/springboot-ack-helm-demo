@@ -13,7 +13,7 @@ RUN yum update -y && \
     cd /root && \
     git clone https://github.com/aliyun-computenest/springboot-ack-helm-demo.git && \
     mkdir -p /home/admin/application && \
-    cp /root/springboot-ack-helm-demo/resources/artifact_resources/file/package.tgz /home/admin/application && \
+    cp /root/springboot-ack-helm-demo/.computenest/resources/artifact_resources/file/package.tgz /home/admin/application && \
     cd /home/admin/application && \
     tar xvf package.tgz && \
     rm -rf /root/springboot-ack-helm-demo && \
