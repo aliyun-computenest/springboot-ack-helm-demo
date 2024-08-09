@@ -370,7 +370,7 @@ Parameters:
     Default: 172.16.0.0/16
 ```
 
-2.Resources定义需要开的资源，包括新开的vpc、loadBalancer、ack集群。MODULE::ACS::ComputeNest::ClusterHelmApplication资源类型会将helm部署物部署到ACK集群中，其中{{ computenest::helmpull::springBoot }}是helm部署物占位符，会替换为对应的helm部署物的下载方式。chartValues中还有镜像容器部署物相关的占位符，{{ computenest::acr::dockerconfigjson }}是下载docker所需secret的占位符，计算巢服务会在部署时替换为对应的下载秘钥。{{ computenest::acrimage::demo }} 是容器镜像仓库的占位符，计算巢服务会替换成对应的镜像仓库地址。
+2.Resources定义需要开的资源，包括新开的vpc、loadBalancer、ack集群。MODULE::ACS::ComputeNest::FluxOciHelmDeploy资源类型会将helm部署物部署到ACK集群中，其中{{ computenest::helmchart::springBoot }}是helm部署物占位符，会替换为对应的helm chart仓库地址。chartValues中还有镜像容器部署物相关的占位符，{{ computenest::acr::dockerconfigjson }}是下载docker所需secret的占位符，计算巢服务会在部署时替换为对应的下载秘钥。{{ computenest::acrimage::demo }} 是容器镜像仓库的占位符，计算巢服务会替换成对应的镜像仓库地址。
 ```
 Resources:
   EcsVpc:
@@ -462,9 +462,9 @@ Resources:
       Addons:
         - Name: flannel
           Config: ''
-  ComputenestHelmApplication:
-    Type: MODULE::ACS::ComputeNest::ClusterHelmApplication
-    Version: v2
+    ComputenestHelmApplication:
+    Type: MODULE::ACS::ComputeNest::FluxOciHelmDeploy
+    Version: v1
     DependsOn:
       - ManagedKubernetesCluster
     Properties:
@@ -472,7 +472,8 @@ Resources:
         Fn::GetAtt:
           - ManagedKubernetesCluster
           - ClusterId
-      ChartIdentifier: '{{ computenest::helmpull::springBoot }}'
+      HelmChartUrl: '{{ computenest::helmchart::springBoot }}'
+      DockerConfigJson: '{{ computenest::helm::dockerconfigjson }}'
       ChartValues:
         image:
           fullname: '{{ computenest::acrimage::springBootDemo }}'
@@ -483,23 +484,25 @@ Resources:
       Namespace:
         Ref: ALIYUN::StackName
       ReleaseName: spring-boot-chart
-  # 睡眠1分钟，以便于获取资源时可以拿到
-  HelmSleep:
-    Type: ALIYUN::ROS::Sleep
-    DependsOn:
-      - ComputenestHelmApplication
-    Properties:
-      CreateDuration: 60
+      WaitUntil:
+        - Kind: Service
+          Name: spring-boot-chart
+          Namespace:
+            Ref: ALIYUN::StackName
+          JsonPath: $.status.loadBalancer.ingress[0].ip
+          Operator: NotEmpty
+          FirstMatch: true
+          Timeout: 300
   # 获取service信息，输出到output中
   ClusterApplicationResources:
     Type: DATASOURCE::CS::ClusterApplicationResources
     DependsOn:
-      - HelmSleep
+      - ComputenestHelmApplication
     Properties:
       ClusterId:
-       Fn::GetAtt:
-        - ManagedKubernetesCluster
-        - ClusterId
+        Fn::GetAtt:
+          - ManagedKubernetesCluster
+          - ClusterId
       Kind: Service
       Name: spring-boot-chart
       Namespace:
